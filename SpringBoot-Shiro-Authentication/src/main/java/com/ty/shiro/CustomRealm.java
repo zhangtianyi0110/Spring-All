@@ -1,8 +1,7 @@
 package com.ty.shiro;
 
-import com.ty.dao.UserMapper;
 import com.ty.pojo.User;
-import com.ty.util.MD5Utils;
+import com.ty.service.UserService;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
@@ -24,23 +23,20 @@ public class CustomRealm extends AuthorizingRealm {
 
     private Logger log = LoggerFactory.getLogger(CustomRealm.class);
     @Resource
-    private UserMapper userMapper;
+    private UserService userService;
+
+
     //登录认证
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
         //1.从主体传过来的授权信息中，获取用户名
-        String userName = (String) authenticationToken.getPrincipal();
-        String password = String.copyValueOf((char[]) authenticationToken.getCredentials());
-        password = MD5Utils.encrypt(password,userName);
+        String usernmae = (String) authenticationToken.getPrincipal();
         //2.通过用户名到数据库中获取角色权限数据
-        User user = userMapper.findByUserName(userName);
+        User user = userService.findByUserName(usernmae);
         if(user == null){
             throw new UnknownAccountException("用户名或密码错误");
         }
-        if(password!=null && !password.equals(user.getPassword())){
-            throw new IncorrectCredentialsException("用户名或密码错误");
-        }
-        SimpleAuthenticationInfo authenticationInfo = new SimpleAuthenticationInfo(userName,password,getName());
+        SimpleAuthenticationInfo authenticationInfo = new SimpleAuthenticationInfo(usernmae, user.getPassword(), getName());
         //返回authenticationInfo对象前设置盐
         authenticationInfo.setCredentialsSalt(ByteSource.Util.bytes(user.getUsername()));
         return authenticationInfo;

@@ -1,6 +1,7 @@
 package com.ty.config;
 
 import com.ty.shiro.CustomRealm;
+import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
@@ -14,7 +15,12 @@ public class ShiroConfig {
     //将自定义realm让spring管理
     @Bean
     public CustomRealm customRealm(){
-        return new CustomRealm();
+        CustomRealm customRealm = new CustomRealm();
+        //添加算法和迭代
+        HashedCredentialsMatcher matcher = new HashedCredentialsMatcher("md5");
+        matcher.setHashIterations(1);
+        customRealm.setCredentialsMatcher(matcher);
+        return customRealm;
     }
     //注入自定义realm
     @Bean

@@ -24,22 +24,15 @@ public class UserController {
 
     @PostMapping("/login")
     @ResponseBody
-    public ResponseData login(User user){
+    public ResponseData login(User user) throws Exception{
         Subject subject = SecurityUtils.getSubject();
         UsernamePasswordToken token = new UsernamePasswordToken(user.getUsername(), user.getPassword());
 
-        try {
+
             subject.login(token);
+            subject.isAuthenticated();
             return ResponseUtil.success("登录成功");
-        }catch (UnknownAccountException e) {
-            return ResponseUtil.failure(401,e.getMessage());
-        } catch (IncorrectCredentialsException e) {
-            return ResponseUtil.failure(401,e.getMessage());
-        } catch (LockedAccountException e) {
-            return ResponseUtil.failure(401,e.getMessage());
-        } catch (AuthenticationException e) {
-            return ResponseUtil.failure(401,"认证失败！");
-        }
+
 
     }
 
@@ -50,8 +43,8 @@ public class UserController {
 
     @RequestMapping("/index")
     public String index(Model model) {
-        User user = (User) SecurityUtils.getSubject().getPrincipal();
-        model.addAttribute("user", user);
+        String username = (String) SecurityUtils.getSubject().getPrincipal();
+        model.addAttribute("username", username);
         return "index";
     }
 }
