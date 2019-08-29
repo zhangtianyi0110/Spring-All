@@ -163,7 +163,7 @@ public class CustomRealm extends AuthorizingRealm {
         //1.从主体传过来的授权信息中，获取用户名
         String usernmae = (String) authenticationToken.getPrincipal();
         //2.通过用户名到数据库中获取用户数据
-        User user = userService.findByUserName(usernmae);
+        User user = userService.findByUsername(usernmae);
         if(user == null){
             throw new UnknownAccountException("用户名或密码错误");
         }

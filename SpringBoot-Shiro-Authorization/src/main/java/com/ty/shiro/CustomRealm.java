@@ -47,6 +47,11 @@ public class CustomRealm extends AuthorizingRealm {
     //获取权限
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
+        //1.从主体传过来的认证信息中，获取用户对象
+        User user = (User)principalCollection.getPrimaryPrincipal();
+        //通过用户名到数据库获取角色和权限
+
+
         return null;
     }
 }

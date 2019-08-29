@@ -8,6 +8,7 @@ public class User implements Serializable {
   private int id;
   private String username;
   private String password;
+  private boolean rememberMe;
 
 
   public int getId() {
@@ -18,6 +19,7 @@ public class User implements Serializable {
     this.id = id;
   }
 
+
   public String getUsername() {
     return username;
   }
@@ -25,6 +27,7 @@ public class User implements Serializable {
   public void setUsername(String username) {
     this.username = username;
   }
+
 
   public String getPassword() {
     return password;
@@ -34,4 +37,11 @@ public class User implements Serializable {
     this.password = password;
   }
 
+  public boolean isRememberMe() {
+    return rememberMe;
+  }
+
+  public void setRememberMe(boolean rememberMe) {
+    this.rememberMe = rememberMe;
+  }
 }
