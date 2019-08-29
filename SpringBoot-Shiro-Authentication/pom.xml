@@ -48,7 +48,7 @@
             <artifactId>shiro-spring</artifactId>
             <version>RELEASE</version>
         </dependency>
-
+        <!--thymeleaf模板-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>

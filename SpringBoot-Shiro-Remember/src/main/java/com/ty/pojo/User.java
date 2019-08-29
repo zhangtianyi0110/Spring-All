@@ -1,12 +1,14 @@
 package com.ty.pojo;
 
 
-public class User {
+import java.io.Serializable;
+
+public class User implements Serializable {
 
   private long id;
   private String username;
   private String password;
-  private boolean isRememberMe;
+  private boolean rememberMe;
 
 
   public long getId() {
@@ -35,11 +37,11 @@ public class User {
     this.password = password;
   }
 
-  public boolean getIsRememberMe() {
-    return isRememberMe;
+  public boolean isRememberMe() {
+    return rememberMe;
   }
 
   public void setRememberMe(boolean rememberMe) {
-    isRememberMe = rememberMe;
+    this.rememberMe = rememberMe;
   }
 }

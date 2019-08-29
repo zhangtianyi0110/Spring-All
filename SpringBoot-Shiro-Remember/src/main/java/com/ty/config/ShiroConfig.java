@@ -14,7 +14,10 @@ import java.util.LinkedHashMap;
 
 @Configuration
 public class ShiroConfig {
-    //将自定义realm让spring管理
+    /**
+     * 将自定义realm让spring管理
+     * @return 自定义Realm管理器
+     */
     @Bean
     public CustomRealm customRealm(){
         CustomRealm customRealm = new CustomRealm();
@@ -24,15 +27,27 @@ public class ShiroConfig {
         customRealm.setCredentialsMatcher(matcher);
         return customRealm;
     }
-    //使用CookieRememberMeManager
-    public CookieRememberMeManager cookieRememberMeManager(){
+    /**
+     * @return cookie对象
+     */
+    public SimpleCookie cookie(){
         SimpleCookie cookie = new SimpleCookie("rememberMe");
-        cookie.setMaxAge(15*24*60*1000*1000);//设置失效时间
+        cookie.setMaxAge(24*60*1000);//设置失效时间一天
+        return cookie;
+    }
+    /**
+     * 使用CookieRememberMeManager
+     * @return CookieRememberMeManager
+     */
+    public CookieRememberMeManager cookieRememberMeManager(){
         CookieRememberMeManager cookieRememberMeManager =  new CookieRememberMeManager();
-        cookieRememberMeManager.setCookie(cookie);//使用simplecookie注入cookie
+        cookieRememberMeManager.setCookie(cookie());//使用simplecookie注入cookie
         return cookieRememberMeManager;
     }
-    //注入自定义realm
+    /**
+     * 注入自定义realm
+     * @return SecurityManager
+     */
     @Bean
     public SecurityManager securityManager(){
         DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
@@ -56,10 +71,12 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/fonts/**", "anon");
         filterChainDefinitionMap.put("/img/**", "anon");
         filterChainDefinitionMap.put("/druid/**", "anon");
+        filterChainDefinitionMap.put("/login","anon");
         filterChainDefinitionMap.put("/logout", "logout");
         filterChainDefinitionMap.put("/", "anon");
-        filterChainDefinitionMap.put("/**", "authc");
-
+        //filterChainDefinitionMap.put("/**", "authc");
+        // user指的是用户认证通过或者配置了Remember Me记住用户登录状态后可访问。
+        filterChainDefinitionMap.put("/**", "user");
         shiroFilterFactoryBean.setFilterChainDefinitionMap(filterChainDefinitionMap);
 
         return shiroFilterFactoryBean;

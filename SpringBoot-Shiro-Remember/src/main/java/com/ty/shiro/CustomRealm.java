@@ -21,7 +21,7 @@ import javax.annotation.Resource;
  */
 public class CustomRealm extends AuthorizingRealm {
 
-    private Logger log = LoggerFactory.getLogger(CustomRealm.class);
+    private Logger logger = LoggerFactory.getLogger(CustomRealm.class);
     @Resource
     private UserService userService;
 
@@ -29,6 +29,7 @@ public class CustomRealm extends AuthorizingRealm {
     //登录认证
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
+        logger.info("-----doGetAuthenticationInfo 开始-----");
         //1.从主体传过来的授权信息中，获取用户名
         String usernmae = (String) authenticationToken.getPrincipal();
         //2.通过用户名到数据库中获取角色权限数据
@@ -36,9 +37,10 @@ public class CustomRealm extends AuthorizingRealm {
         if(user == null){
             throw new UnknownAccountException("用户名或密码错误");
         }
-        SimpleAuthenticationInfo authenticationInfo = new SimpleAuthenticationInfo(usernmae, user.getPassword(), getName());
+        SimpleAuthenticationInfo authenticationInfo = new SimpleAuthenticationInfo(user, user.getPassword(), getName());
         //返回authenticationInfo对象前设置盐
         authenticationInfo.setCredentialsSalt(ByteSource.Util.bytes(user.getUsername()));
+        logger.info("-----doGetAuthenticationInfo 结束-----");
         return authenticationInfo;
 
     }
