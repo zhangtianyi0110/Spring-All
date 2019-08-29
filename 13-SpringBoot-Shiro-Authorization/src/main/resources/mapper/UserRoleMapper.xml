@@ -7,8 +7,8 @@
    <id column="role_name" property="roleName" javaType="java.lang.String" jdbcType="VARCHAR"/>
 </resultMap>
 
-<select id="findRolesByUsername" resultMap="Role">
-	select * from user where username = #{username}
+<select id="findRolesByUsername" resultType="String">
+	SELECT role_name FROM user_role_relation WHERE username = #{username}
 </select>
 
 </mapper>

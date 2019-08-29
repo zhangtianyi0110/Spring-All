@@ -1,9 +1,12 @@
 package com.ty.shiro;
 
 import com.ty.pojo.User;
+import com.ty.service.UserPermsService;
+import com.ty.service.UserRoleService;
 import com.ty.service.UserService;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.authz.AuthorizationInfo;
+import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.util.ByteSource;
@@ -11,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Resource;
+import java.util.Set;
 
 /**
  * @ClassName: CustomRealm
@@ -24,6 +28,10 @@ public class CustomRealm extends AuthorizingRealm {
     private Logger logger = LoggerFactory.getLogger(CustomRealm.class);
     @Resource
     private UserService userService;
+    @Resource
+    private UserRoleService userRoleService;
+    @Resource
+    private UserPermsService userPermsService;
 
 
     //登录认证
@@ -50,8 +58,13 @@ public class CustomRealm extends AuthorizingRealm {
         //1.从主体传过来的认证信息中，获取用户对象
         User user = (User)principalCollection.getPrimaryPrincipal();
         //通过用户名到数据库获取角色和权限
+        Set<String> roles = userRoleService.getRoleByUsername(user.getUsername());
+        Set<String> permissions = userPermsService.getPermsByusername(user);
+        //构造对象返回加上角色权限
+        SimpleAuthorizationInfo authorizationInfo = new SimpleAuthorizationInfo();
+        authorizationInfo.setRoles(roles);//角色
+        authorizationInfo.setStringPermissions(permissions);//权限
+        return authorizationInfo;
 
-
-        return null;
     }
 }
