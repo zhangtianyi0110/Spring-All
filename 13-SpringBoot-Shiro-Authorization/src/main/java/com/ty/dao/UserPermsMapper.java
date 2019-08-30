@@ -7,5 +7,5 @@ import java.util.Set;
 
 @Mapper
 public interface UserPermsMapper {
-    Set<String> findPermsByusername(User user);
+    Set<String> findPermsByUsername(User user);
 }

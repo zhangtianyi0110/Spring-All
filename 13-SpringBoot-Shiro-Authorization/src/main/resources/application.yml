@@ -63,6 +63,9 @@ spring:
   thymeleaf:
     cache: false
 
+  aop:
+    auto: true
+
 
 mybatis:
   # type-aliases扫描路径

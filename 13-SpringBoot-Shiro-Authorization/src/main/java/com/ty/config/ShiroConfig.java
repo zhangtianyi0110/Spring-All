@@ -2,8 +2,9 @@ package com.ty.config;
 
 import com.ty.shiro.CustomRealm;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
-import org.apache.shiro.mgt.SecurityManager;
+import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
+import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.web.mgt.CookieRememberMeManager;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.servlet.SimpleCookie;
@@ -14,19 +15,21 @@ import java.util.LinkedHashMap;
 
 @Configuration
 public class ShiroConfig {
-    /**
-     * 将自定义realm让spring管理
-     * @return 自定义Realm管理器
-     */
-    @Bean
-    public CustomRealm customRealm(){
-        CustomRealm customRealm = new CustomRealm();
-        //添加算法和迭代
-        HashedCredentialsMatcher matcher = new HashedCredentialsMatcher("md5");
-        matcher.setHashIterations(1);
-        customRealm.setCredentialsMatcher(matcher);
-        return customRealm;
-    }
+
+    // 下面两个方法对 注解权限起作用有很大的关系，请把这两个方法，放在配置的最上面
+//    @Bean(name = "lifecycleBeanPostProcessor")
+//    public LifecycleBeanPostProcessor getLifecycleBeanPostProcessor() {
+//        return new LifecycleBeanPostProcessor();
+//    }
+//
+//    @Bean
+//    public DefaultAdvisorAutoProxyCreator getDefaultAdvisorAutoProxyCreator() {
+//        DefaultAdvisorAutoProxyCreator autoProxyCreator = new DefaultAdvisorAutoProxyCreator();
+//        autoProxyCreator.setProxyTargetClass(true);
+//        return autoProxyCreator;
+//    }
+
+
     /**
      * @return cookie对象
      */
@@ -45,16 +48,44 @@ public class ShiroConfig {
         return cookieRememberMeManager;
     }
     /**
+     * 将自定义realm让spring管理
+     * @return 自定义Realm管理器
+     */
+    @Bean
+    public CustomRealm customRealm(){
+        CustomRealm customRealm = new CustomRealm();
+        //添加算法和迭代
+        HashedCredentialsMatcher matcher = new HashedCredentialsMatcher("md5");
+        matcher.setHashIterations(1);
+        customRealm.setCredentialsMatcher(matcher);
+        return customRealm;
+    }
+    /**
      * 注入自定义realm
      * @return SecurityManager
      */
     @Bean
-    public SecurityManager securityManager(){
+    public DefaultWebSecurityManager securityManager(){
         DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
         securityManager.setRealm(customRealm());//注入自定义Realm
-        securityManager.setRememberMeManager(cookieRememberMeManager());//注入RealmManager
+        securityManager.setRememberMeManager(cookieRememberMeManager());//注入RememberMeManager
         return securityManager;
     }
+
+
+    /**
+     * 开启shiro注解
+     * @param securityManager
+     * @return
+     */
+    @Bean
+    public AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor(SecurityManager securityManager){
+        AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor = new
+                AuthorizationAttributeSourceAdvisor();
+        authorizationAttributeSourceAdvisor.setSecurityManager(securityManager);
+        return authorizationAttributeSourceAdvisor;
+    }
+
     //配置shiro的web过滤器,是shiro的核心配置,shiro的所有功能都基于这个对象
     @Bean
     public ShiroFilterFactoryBean shiroFilterFactoryBean(SecurityManager securityManager) {

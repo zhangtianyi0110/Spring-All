@@ -6,6 +6,15 @@
 </head>
 <body>
 <p>你好！[[${user.username}]]</p>
+<h3>权限测试链接</h3>
+<div>
+    <a th:href="@{/user/get}">获取用户信息</a>
+    <a th:href="@{/user/add}">新增用户</a>
+    <a th:href="@{/user/delete}">删除用户</a>
+    <a th:href="@{/admin/get}">获取管理员信息</a>
+    <a th:href="@{/admin/delete}">删除管理员</a>
+
+</div>
 <a th:href="@{/logout}">注销</a>
 </body>
 </html>

@@ -1,6 +1,8 @@
 package com.ty.controller;
 
+import com.ty.pojo.ResponseData;
 import com.ty.pojo.User;
+import com.ty.util.ResponseUtil;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.subject.Subject;
@@ -11,10 +13,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
-public class UserController {
-    private Logger logger = LoggerFactory.getLogger(UserController.class);
+public class LoginController {
+    private Logger logger = LoggerFactory.getLogger(LoginController.class);
 
     @GetMapping("/login")
     public String login(){
@@ -26,13 +29,15 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public String login(User user) throws Exception{
+    @ResponseBody
+    public ResponseData login(User user) throws Exception{
         logger.info("开始认证...");
         Subject subject = SecurityUtils.getSubject();
         UsernamePasswordToken token = new UsernamePasswordToken(user.getUsername(), user.getPassword());
+        token.setRememberMe(user.isRememberMe());
         subject.login(token);//登录认证
         logger.info("结束认证...");
-        return "redirect:/index";
+        return ResponseUtil.success("登录成功");
     }
 
     @RequestMapping("/logout")

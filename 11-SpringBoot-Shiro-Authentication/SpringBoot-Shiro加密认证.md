@@ -240,8 +240,8 @@ public class ShiroConfig {
 
 ```java
 @Controller
-public class UserController {
-    private Logger logger = LoggerFactory.getLogger(UserController.class);
+public class LoginController {
+    private Logger logger = LoggerFactory.getLogger(LoginController.class);
 
     @GetMapping("/login")
     public String login(){
@@ -253,13 +253,14 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public String login(User user) throws Exception{
+    @ResponseBody
+    public ResponseData login(User user) throws Exception{
         logger.info("开始认证...");
         Subject subject = SecurityUtils.getSubject();
         UsernamePasswordToken token = new UsernamePasswordToken(user.getUsername(), user.getPassword());
         subject.login(token);//登录认证
         logger.info("结束认证...");
-        return "redirect:/index";
+        return ResponseUtil.success("登录成功");
     }
 
     @RequestMapping("/logout")
@@ -280,6 +281,105 @@ public class UserController {
     }
 }
 ```
+
+##### 4.新建login.html和index.html
+
+> login.html
+
+```html
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/login.css}">
+    <title>login</title>
+</head>
+<body>
+<div id="app">
+    <div class="login">
+        <div class="panel panel-default">
+            <div class="panel-heading">登录</div>
+            <div class="panel-body">
+                <form class="form-horizontal" οnsubmit="return false;">
+                <div class="form-group">
+                    <label for="username" class="col-sm-2 control-label">用户名</label>
+                    <div class="col-sm-10">
+                        <input type="username" class="form-control" id="username" th:name="username" placeholder="请输入用户名">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="password" class="col-sm-2 control-label">密码</label>
+                    <div class="col-sm-10">
+                        <input type="password" class="form-control" id="password" th:name="password" placeholder="请输入密码">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <button type="button" onclick="login()" class="btn btn-default">登录</button>
+                    </div>
+                </div>
+            </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- jQuery (Bootstrap 的所有 JavaScript 插件都依赖 jQuery，所以必须放在前边) -->
+<script src="https://cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<!-- 加载 Bootstrap 的所有 JavaScript 插件。你也可以根据需要只加载单个插件。 -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js"></script>
+
+
+<script th:inline="javascript" type="text/javascript">
+    var ctxPath  = [[${#httpServletRequest.getContextPath()}]];
+
+    function login() {
+        var username = $("#username").val();
+        var password = $("#password").val();
+        $.ajax({
+            type: "post",
+            url: ctxPath + "login",
+            data: {username,password},
+            dataType:"json",
+            success:function (result) {
+                if(result.code==200){
+                    alert(result.msg);
+                    window.location.href = ctxPath + 'index'
+                }else{
+                    alert(result.msg);
+                }
+            }
+        })
+    }
+</script>
+</body>
+</html>
+```
+
+> index.html
+
+```html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>首页</title>
+</head>
+<body>
+<p>你好！[[${user.username}]]</p>
+<a th:href="@{/logout}">注销</a>
+</body>
+</html>
+```
+
+
 
 ### 6.测试
 

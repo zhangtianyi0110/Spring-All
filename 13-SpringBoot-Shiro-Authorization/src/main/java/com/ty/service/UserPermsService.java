@@ -13,7 +13,7 @@ public class UserPermsService {
     private UserPermsMapper userPermsMapper;
 
     public Set<String> getPermsByusername(User user){
-        Set<String> permissions = userPermsMapper.findPermsByusername(user);
+        Set<String> permissions = userPermsMapper.findPermsByUsername(user);
         return permissions;
     }
 }

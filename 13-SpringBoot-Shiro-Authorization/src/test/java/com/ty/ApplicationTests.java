@@ -1,6 +1,5 @@
 package com.ty;
 
-import com.ty.pojo.Role;
 import com.ty.pojo.User;
 import com.ty.service.UserPermsService;
 import com.ty.service.UserRoleService;
@@ -10,7 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
-import java.util.List;
+import java.util.Set;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -28,14 +27,14 @@ public class ApplicationTests {
     public void getPermsByusername(){
         User user = new User();
         user.setUsername("admin");
-        List<String> permissions = userPermsService.getPermsByusername(user);
+        Set<String> permissions = userPermsService.getPermsByusername(user);
         permissions.forEach(permission->{
             System.out.println(permission);
         });
     }
     @Test
     public void getRoleByUsername(){
-        List<Role> roles = userRoleService.getRoleByUsername("admin");
+        Set<String> roles = userRoleService.getRoleByUsername("admin");
         roles.forEach(role->{
             System.out.println(role.toString());
         });

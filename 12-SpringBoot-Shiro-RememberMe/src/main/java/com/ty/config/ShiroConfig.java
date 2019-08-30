@@ -14,19 +14,7 @@ import java.util.LinkedHashMap;
 
 @Configuration
 public class ShiroConfig {
-    /**
-     * 将自定义realm让spring管理
-     * @return 自定义Realm管理器
-     */
-    @Bean
-    public CustomRealm customRealm(){
-        CustomRealm customRealm = new CustomRealm();
-        //添加算法和迭代
-        HashedCredentialsMatcher matcher = new HashedCredentialsMatcher("md5");
-        matcher.setHashIterations(1);
-        customRealm.setCredentialsMatcher(matcher);
-        return customRealm;
-    }
+
     /**
      * @return cookie对象
      */
@@ -45,14 +33,28 @@ public class ShiroConfig {
         return cookieRememberMeManager;
     }
     /**
+     * 将自定义realm让spring管理
+     * @return 自定义Realm管理器
+     */
+    @Bean
+    public CustomRealm customRealm(){
+        CustomRealm customRealm = new CustomRealm();
+        //添加算法和迭代
+        HashedCredentialsMatcher matcher = new HashedCredentialsMatcher("md5");
+        matcher.setHashIterations(1);
+        customRealm.setCredentialsMatcher(matcher);
+        return customRealm;
+    }
+    /**
      * 注入自定义realm
+     * 注入RememberMeManager
      * @return SecurityManager
      */
     @Bean
     public SecurityManager securityManager(){
         DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
         securityManager.setRealm(customRealm());//注入自定义Realm
-        securityManager.setRememberMeManager(cookieRememberMeManager());//注入RealmManager
+        securityManager.setRememberMeManager(cookieRememberMeManager());//注入RememberMeManager
         return securityManager;
     }
     //配置shiro的web过滤器,是shiro的核心配置,shiro的所有功能都基于这个对象
