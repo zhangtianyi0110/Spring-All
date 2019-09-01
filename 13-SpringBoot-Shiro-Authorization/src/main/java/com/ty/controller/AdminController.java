@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("admin")
 public class AdminController {
 
-
     @RequiresPermissions("admin:get")
     @RequestMapping("get")
     public String adminGet(Model model) {
@@ -23,5 +22,4 @@ public class AdminController {
         model.addAttribute("value", "删除管理员");
         return "admin";
     }
-
 }

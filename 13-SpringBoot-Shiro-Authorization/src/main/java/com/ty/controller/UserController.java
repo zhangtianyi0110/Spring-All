@@ -37,6 +37,4 @@ public class UserController {
         model.addAttribute("value", "删除用户");
         return "user";
     }
-
-
 }

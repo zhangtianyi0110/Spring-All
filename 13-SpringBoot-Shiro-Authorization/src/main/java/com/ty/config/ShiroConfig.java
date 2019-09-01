@@ -16,20 +16,6 @@ import java.util.LinkedHashMap;
 @Configuration
 public class ShiroConfig {
 
-    // 下面两个方法对 注解权限起作用有很大的关系，请把这两个方法，放在配置的最上面
-//    @Bean(name = "lifecycleBeanPostProcessor")
-//    public LifecycleBeanPostProcessor getLifecycleBeanPostProcessor() {
-//        return new LifecycleBeanPostProcessor();
-//    }
-//
-//    @Bean
-//    public DefaultAdvisorAutoProxyCreator getDefaultAdvisorAutoProxyCreator() {
-//        DefaultAdvisorAutoProxyCreator autoProxyCreator = new DefaultAdvisorAutoProxyCreator();
-//        autoProxyCreator.setProxyTargetClass(true);
-//        return autoProxyCreator;
-//    }
-
-
     /**
      * @return cookie对象
      */

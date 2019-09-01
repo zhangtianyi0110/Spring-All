@@ -23,6 +23,9 @@ public class ApplicationTests {
     public void contextLoads() {
     }
 
+
+
+
     @Test
     public void getPermsByusername(){
         User user = new User();
@@ -39,5 +42,6 @@ public class ApplicationTests {
             System.out.println(role.toString());
         });
     }
+
 
 }
