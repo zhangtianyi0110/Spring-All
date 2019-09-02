@@ -1,10 +1,10 @@
-## SpringBoot整合Shiro-Remember-记住我
+# SpringBoot整合Shiro-Remember-记住我
 
 当用户成功登录后，关闭浏览器然后再打开浏览器访问http://localhost:8080/index，页面会跳转到登录页，之前的登录因为浏览器的关闭已经失效。
 
 紧接上一篇教程SpringBoot整合Shiro-Authentication-加密认证，新增rememberMe功能。
 
-### 1.修改ShiroConfig
+## 修改ShiroConfig
 
 添加cookie对象和cookie管理器并注入SecurityManager
 
@@ -72,7 +72,7 @@ org.apache.shiro.crypto.CryptoException: Unable to execute 'doFinal' with cipher
 
 
 
-### 2.修改User对象添加rememberMe属性
+## 修改User对象添加rememberMe属性
 
 ```java
 public class User implements Serializable {
@@ -85,7 +85,7 @@ public class User implements Serializable {
 }
 ```
 
-### 3.修改Login.html，添加checkbox传递rememberMe值
+## 修改Login.html，添加checkbox传递rememberMe值
 
 ```html
 <!DOCTYPE html>
@@ -171,7 +171,7 @@ public class User implements Serializable {
 </html>
 ```
 
-### 4.修改UserController给token设置rememberMe
+## 修改UserController给token设置rememberMe
 
 ```java
     @PostMapping("/login")
@@ -187,7 +187,7 @@ public class User implements Serializable {
     }
 ```
 
-### 5.测试
+## 测试
 
 启动springboot，进入登录页输入正确账号密码。
 

@@ -9,9 +9,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.ty</groupId>
-    <artifactId>springboot-shiro-ehcache</artifactId>
+    <artifactId>springboot-shiro-cache</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>SpringBoot-Shiro-EhCache</name>
+    <name>SpringBoot-Shiro-Cache</name>
     <description>SpringBoot-Shiro-EhCache project for Spring Boot</description>
 
     <properties>

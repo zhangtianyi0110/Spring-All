@@ -1,6 +1,6 @@
-## SpringBoot异常处理
+# SpringBoot异常处理
 
-### 1.自定义异常类
+## 自定义异常类
 
 ```java
 public class MyException extends RuntimeException {
@@ -24,7 +24,7 @@ public class MyException extends RuntimeException {
 
 Spring中只有RuntimeException可以事务回滚，RuntimeException继承Exception，所以这里继承RuntimeException。
 
-### 2.定义统一格式回传数据
+## 定义统一格式回传数据
 
 ```java
 public class ResponseBean {
@@ -69,7 +69,7 @@ public class ResponseBean {
 
 定义统一个回传格式。
 
-### 3.定义全局异常处理handler
+## 定义全局异常处理handler
 
 ```java
 @RestControllerAdvice
@@ -86,7 +86,7 @@ public class GlobalExceptionHandler {
 }
 ```
 
-### 4.新建一个controller进行测试
+## 新建一个controller进行测试
 
 ```java
 @RestController

@@ -1,3 +1,3 @@
-## SpringBoot整合Shiro-Authorization-权限控制
+# SpringBoot整合Shiro-Authorization-权限控制
 
 紧接上一篇教程SpringBoot整合Shiro-RememberMe-记住我，新增Authorization功能。shiro认证中我们继承了AuthorizingRealm抽象类实现了`doGetAuthenticationInfo()`方法完成用户认证，同样的我们可以继承AuthorizingRealm抽象类中的`doGetAuthorizationInfo()` 方法完成用户权限控制。

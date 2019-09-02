@@ -1,4 +1,6 @@
-## SpringBoot整合Shiro-Cache-使用缓存
+# SpringBoot整合Shiro-Cache-使用缓存
+
+## 问题
 
 紧接上一篇教程SpringBoot整合Shiro-Authorization-授权，新增缓存功能，这里缓存使用EhCache。使用缓存可以避免频繁访问数据库，减轻数据库压力。Shiro并没有直接提供缓存的实现，只是对缓存进行了抽象。
 
@@ -14,13 +16,13 @@
 
 执行多次同样sql对数据库压力比较大，需要使用缓存来解决。这里使用两种方式实现缓存EhCache和Redis。
 
-### 1.EhCache
+## EhCache
 
 ehcache是一种第三方缓存技术，它出自hibernate，在hibernate中使用它作为数据缓存的解决方案。
 
 ehcache与shiro做整合.
 
-#### 添加EhCache依赖
+### 添加EhCache依赖
 
 ```xml
         <!--使用Cache缓存-->
@@ -36,7 +38,7 @@ ehcache与shiro做整合.
         </dependency>
 ```
 
-#### 新增EhCache配置文件
+### 新增EhCache配置文件
 
 在src/main/resource/config路径下新增一个Ehcache配置——shiro-ehcache.xml：
 
@@ -89,7 +91,7 @@ ehcache与shiro做整合.
 
 可以直接改为`<diskStore path="java.io.tmpdir/Tmp_EhCache" />`
 
-## ehcache 的 diskStore path="java.io.tmpdir"
+### ehcache 的 diskStore path="java.io.tmpdir"
 
 ```xml
 <!—设置缓存文件 .data 的创建路径。
@@ -105,7 +107,7 @@ java.io.tmpdir – 默认临时文件路径 -->
 
 
 
-#### 在ShiroConfig配置EhCache
+### 在ShiroConfig配置EhCache
 
 ```java
 /**
@@ -135,7 +137,7 @@ java.io.tmpdir – 默认临时文件路径 -->
 
 
 
-### 2.测试
+### 测试
 
 再次登录，点击[获取用户信息](http://localhost:8080/user/get)，多点几次发现，只有一行打印结果。
 
@@ -147,11 +149,11 @@ java.io.tmpdir – 默认临时文件路径 -->
 
 此时整合完成。
 
-### 3.基于Redis实现缓存管理
+## 基于Redis实现缓存管理
 
 此时可以使用redis来进行缓存管理
 
-#### 添加依赖
+### 添加依赖
 
 ```xml
 <!--配置shiro-redis-->
@@ -162,7 +164,7 @@ java.io.tmpdir – 默认临时文件路径 -->
         </dependency>
 ```
 
-#### 配置redis基本信息
+### 配置redis基本信息
 
 ```yml
 spring:
@@ -177,7 +179,7 @@ spring:
     timeout: 0
 ```
 
-#### 在ShiroConfig中配置Redis
+### 在ShiroConfig中配置Redis
 
 ```java
 public RedisManager redisManager() {
@@ -212,7 +214,7 @@ public RedisCacheManager reidsCacheManager() {
 
 此时将注入EhCacheManager注释掉，使用ReidsCacheManager对象。
 
-#### 测试
+### 测试
 
 [下载redis-windows](https://github.com/microsoftarchive/redis/releases/download/win-3.2.100/Redis-x64-3.2.100.zip)，也可以在github选取你指定版本[redis-windos](https://github.com/microsoftarchive/redis/releases)
 
@@ -225,4 +227,23 @@ public RedisCacheManager reidsCacheManager() {
 启动springboot
 
 同样按照上述测试过程，测试成功。
+
+## 注意缓存清空
+
+- **如果用户正常退出，缓存自动清空。**
+
+- **如果用户非正常退出，缓存自动清空。**
+
+- **当管理员修改了用户权限，但是该用户未退出时，在默认情况下修改操作无法立即生效。此时需要手动清除缓存在权限修改后调用realm的clearCache方法清除缓存。**
+
+  ```java
+    //清除缓存
+      public void clearCached() {
+          PrincipalCollection principals = SecurityUtils.getSubject().getPrincipals();
+          super.clearCache(principals);
+      }
+  ```
+
+  
+  
 

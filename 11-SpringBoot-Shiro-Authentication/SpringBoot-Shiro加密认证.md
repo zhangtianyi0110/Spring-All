@@ -1,6 +1,6 @@
-## SpringBoot整合Shiro-Authentication-加密认证
+# SpringBoot整合Shiro-Authentication-加密认证
 
-### 1.添加依赖
+## 添加依赖
 
 ```java
 <dependencies>
@@ -48,11 +48,11 @@
     </dependencies>
 ```
 
-### 2.执行sql脚本，建立相关表结构和数据
+## 执行sql脚本，建立相关表结构和数据
 
 在数据库执行init.sql
 
-### 3.配置application.yml
+## 配置application.yml
 
 ```java
 server:
@@ -130,15 +130,15 @@ mybatis:
   # config-location: classpath:mybatis.xml
 ```
 
-### 4.构造基本的web分层
+## 构造基本的web分层
 
 包括controller（转发）、service（业务逻辑）、dao（数据持久层），实现一个用户登录简单例字，包括exception全局异常处理，登录页面由thymeleaf实现，基于SpringBootException例字扩展。
 
-### 5.shiro核心
+## shiro核心
 
 新建shrio配置和自定义Realm，以及md5加密处理类。
 
-##### 1.自定义Realm
+### 自定义Realm
 
 此处的自定义Realm只重写认证方法，授权等详情请看SpringBoot-Shiro-Authorization
 
@@ -181,7 +181,7 @@ public class CustomRealm extends AuthorizingRealm {
 }
 ```
 
-##### 2.自定义Shiro config
+### 自定义Shiro config
 
 ```java
 @Configuration
@@ -236,7 +236,7 @@ public class ShiroConfig {
 - 配置shiro的web过滤器,是shiro的核心配置,shiro的所有功能都基于这个对象，将SecurityManager注入
 - 配置shiro的web过滤器的基本配置
 
-##### 3.修改UserController
+### 修改UserController
 
 ```java
 @Controller
@@ -282,7 +282,7 @@ public class LoginController {
 }
 ```
 
-##### 4.新建login.html和index.html
+### 新建login.html和index.html
 
 > login.html
 
@@ -381,7 +381,7 @@ public class LoginController {
 
 
 
-### 6.测试
+### 测试
 
 启动springboot，进入登录页输入正确账号密码。
 
