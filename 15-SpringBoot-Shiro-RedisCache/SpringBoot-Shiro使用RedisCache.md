@@ -34,16 +34,16 @@
 ### 配置redis基本信息
 
 ```yml
-spring:
   redis:
     host: localhost
     port: 6379
-    pool:
-      max-active: 8
-      max-wait: -1
-      max-idle: 8
-      min-idle: 0
-    timeout: 0
+    timeout: 0 #连接超时时间（毫秒）
+    jedis:
+      pool:
+        max-active: 8 #连接池最大连接数（使用负值表示没有限制）
+        max-wait: -1 #连接池最大阻塞等待时间（使用负值表示没有限制）
+        max-idle: 8 #连接池最大空闲连接
+        min-idle: 0 #最小空闲连接
 ```
 
 ### 在ShiroConfig中配置Redis
