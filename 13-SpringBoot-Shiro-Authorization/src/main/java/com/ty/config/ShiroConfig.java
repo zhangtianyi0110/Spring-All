@@ -2,12 +2,15 @@ package com.ty.config;
 
 import com.ty.shiro.CustomRealm;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
+import org.apache.shiro.codec.Base64;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.web.mgt.CookieRememberMeManager;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.servlet.SimpleCookie;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -15,6 +18,7 @@ import java.util.LinkedHashMap;
 
 @Configuration
 public class ShiroConfig {
+    private Logger logger = LoggerFactory.getLogger(ShiroConfig.class);
 
     /**
      * @return cookie对象
@@ -31,6 +35,18 @@ public class ShiroConfig {
     public CookieRememberMeManager cookieRememberMeManager(){
         CookieRememberMeManager cookieRememberMeManager =  new CookieRememberMeManager();
         cookieRememberMeManager.setCookie(cookie());//使用simplecookie注入cookie
+        /**
+         * 不使用加密会报错
+         * org.apache.shiro.crypto.CryptoException: Unable to execute 'doFinal' with cipher instance [javax.crypto.Cipher@4e025e0a]
+         * rememberMe cookie加密的密钥,由于rememberMeManager继承了AbstractRememberMeManager，
+         * 然而AbstractRememberMeManager的构造方法中每次都会重新生成对称加密密钥！！！！
+         * 意味着每次重启程序都会重新生成一对加解密密钥！！！
+         * 第一次启动shiro使用A密钥加密了cookie，第二次启动重新生成了B密钥，对不上所以报错
+         * 所以这不影响用户登录操作(rememberMe失效罢了)，所以这种异常只会在程序重启(shiro清除session)第一次打开页面的时候出现
+         * 解决方法:主动设置一个密钥
+         */
+        cookieRememberMeManager.setCipherKey(Base64.decode("6ZmI6I2j5Y+R5aSn5ZOlAA=="));
+        logger.info("加载RememberMeManager完成...");
         return cookieRememberMeManager;
     }
     /**

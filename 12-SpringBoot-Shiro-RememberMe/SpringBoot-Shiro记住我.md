@@ -24,6 +24,18 @@
     public CookieRememberMeManager cookieRememberMeManager(){
         CookieRememberMeManager cookieRememberMeManager =  new CookieRememberMeManager();
         cookieRememberMeManager.setCookie(cookie());//使用simplecookie注入cookie
+                /**
+         * 不使用加密会报错
+         * org.apache.shiro.crypto.CryptoException: Unable to execute 'doFinal' with cipher instance [javax.crypto.Cipher@4e025e0a]
+         * rememberMe cookie加密的密钥,由于rememberMeManager继承了AbstractRememberMeManager，
+         * 然而AbstractRememberMeManager的构造方法中每次都会重新生成对称加密密钥！！！！
+         * 意味着每次重启程序都会重新生成一对加解密密钥！！！
+         * 第一次启动shiro使用A密钥加密了cookie，第二次启动重新生成了B密钥，对不上所以报错
+         * 所以这不影响用户登录操作(rememberMe失效罢了)，所以这种异常只会在程序重启(shiro清除session)第一次打开页面的时候出现
+         * 解决方法:主动设置一个密钥
+         */
+        cookieRememberMeManager.setCipherKey(Base64.decode("6ZmI6I2j5Y+R5aSn5ZOlAA=="));
+        logger.info("加载RememberMeManager完成...");
         return cookieRememberMeManager;
     }
    /**
@@ -39,6 +51,16 @@
         return securityManager;
     }
 ```
+
+
+
+**不使用`cookieRememberMeManager.setCipherKey(Base64.decode("6ZmI6I2j5Y+R5aSn5ZOlAA=="));`加密会报错**
+org.apache.shiro.crypto.CryptoException: Unable to execute 'doFinal' with cipher instance [javax.crypto.Cipher@4e025e0a]
+
+**原因 ：**rememberMe cookie加密的密钥,由于rememberMeManager继承了AbstractRememberMeManager，
+然而AbstractRememberMeManager的构造方法中每次都会重新生成对称加密密钥！！！！意味着每次重启程序都会重新生成一对加解密密钥！！！
+第一次启动shiro使用A密钥加密了cookie，第二次启动重新生成了B密钥，对不上所以报错，所以这不影响用户登录操作(rememberMe失效罢了)，所以这种异常只会在程序重启(shiro清除session)第一次打开页面的时候出现
+**解决方法:**主动设置一个密钥
 
 最后修改权限配置，将ShiroFilterFactoryBean的`filterChainDefinitionMap.put("/**", "authc");`更改为`filterChainDefinitionMap.put("/**", "user");`。`user`指的是用户认证通过或者配置了Remember Me记住用户登录状态后可访问。
 

@@ -2,12 +2,16 @@ package com.ty.config;
 
 import com.ty.shiro.CustomRealm;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
+import org.apache.shiro.cache.ehcache.EhCacheManager;
 import org.apache.shiro.codec.Base64;
 import org.apache.shiro.mgt.SecurityManager;
+import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.CookieRememberMeManager;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.servlet.SimpleCookie;
+import org.crazycake.shiro.RedisCacheManager;
+import org.crazycake.shiro.RedisManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -59,20 +63,68 @@ public class ShiroConfig {
         HashedCredentialsMatcher matcher = new HashedCredentialsMatcher("md5");
         matcher.setHashIterations(1);
         customRealm.setCredentialsMatcher(matcher);
+        logger.info("加载CustomRealm完成...");
         return customRealm;
     }
+
     /**
-     * 注入自定义realm
-     * 注入RememberMeManager
+     * 初始化EhCache对象
+     * @return EhCache对象
+     */
+    @Bean
+    public EhCacheManager ehCacheManager(){
+        EhCacheManager ehCacheManager = new EhCacheManager();
+        ehCacheManager.setCacheManagerConfigFile("classpath:config/shiro-ehcache.xml");
+        logger.info("加载EhCache完成...");
+        return ehCacheManager;
+    }
+    /**
+     * redis管理器
+     * @return
+     */
+    public RedisManager redisManager() {
+        RedisManager redisManager = new RedisManager();
+        return redisManager;
+    }
+
+    /**
+     * redis缓存管理器
+     * @return CustomRedisCacheManager
+     */
+    public RedisCacheManager reidsCacheManager() {
+        RedisCacheManager redisCacheManager = new RedisCacheManager();
+        redisCacheManager.setRedisManager(redisManager());//注入redis管理器
+        return redisCacheManager;
+    }
+
+    /**
+     * 注入自定义realm、EhCacheManager/ReidsCacheManager对象
      * @return SecurityManager
      */
     @Bean
-    public SecurityManager securityManager(){
+    public DefaultWebSecurityManager securityManager(){
         DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
         securityManager.setRealm(customRealm());//注入自定义Realm
         securityManager.setRememberMeManager(cookieRememberMeManager());//注入RememberMeManager
+        //securityManager.setCacheManager(ehCacheManager());//注入EhCacheManager
+        securityManager.setCacheManager(reidsCacheManager());//注入RedisCacheManager
         return securityManager;
     }
+
+
+    /**
+     * 开启shiro注解
+     * @param securityManager
+     * @return
+     */
+    @Bean
+    public AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor(SecurityManager securityManager){
+        AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor = new
+                AuthorizationAttributeSourceAdvisor();
+        authorizationAttributeSourceAdvisor.setSecurityManager(securityManager);
+        return authorizationAttributeSourceAdvisor;
+    }
+
     //配置shiro的web过滤器,是shiro的核心配置,shiro的所有功能都基于这个对象
     @Bean
     public ShiroFilterFactoryBean shiroFilterFactoryBean(SecurityManager securityManager) {
