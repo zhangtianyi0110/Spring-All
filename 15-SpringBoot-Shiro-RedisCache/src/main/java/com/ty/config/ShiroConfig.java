@@ -2,7 +2,6 @@ package com.ty.config;
 
 import com.ty.shiro.CustomRealm;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
-import org.apache.shiro.cache.ehcache.EhCacheManager;
 import org.apache.shiro.codec.Base64;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
@@ -68,17 +67,6 @@ public class ShiroConfig {
     }
 
     /**
-     * 初始化EhCache对象
-     * @return EhCache对象
-     */
-    @Bean
-    public EhCacheManager ehCacheManager(){
-        EhCacheManager ehCacheManager = new EhCacheManager();
-        ehCacheManager.setCacheManagerConfigFile("classpath:config/shiro-ehcache.xml");
-        logger.info("加载EhCache完成...");
-        return ehCacheManager;
-    }
-    /**
      * redis管理器
      * @return
      */
@@ -106,7 +94,6 @@ public class ShiroConfig {
         DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
         securityManager.setRealm(customRealm());//注入自定义Realm
         securityManager.setRememberMeManager(cookieRememberMeManager());//注入RememberMeManager
-        //securityManager.setCacheManager(ehCacheManager());//注入EhCacheManager
         securityManager.setCacheManager(reidsCacheManager());//注入RedisCacheManager
         return securityManager;
     }

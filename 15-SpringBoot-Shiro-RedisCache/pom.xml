@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.ty</groupId>
-    <artifactId>springboot-shiro-cache</artifactId>
+    <artifactId>springboot-shiro-rediscache</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>SpringBoot-Shiro-Cache</name>
-    <description>SpringBoot-Shiro-EhCache project for Spring Boot</description>
+    <name>SpringBoot-Shiro-RedisCache</name>
+    <description>SpringBoot-Shiro-RedisCache project for Spring Boot</description>
 
     <properties>
         <java.version>1.8</java.version>
@@ -45,12 +45,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-cache</artifactId>
-        </dependency>
-        <!--配置shiro和ehcache依赖-->
-        <dependency>
-            <groupId>org.apache.shiro</groupId>
-            <artifactId>shiro-ehcache</artifactId>
-            <version>RELEASE</version>
         </dependency>
         <!--配置shiro-redis-->
         <dependency>

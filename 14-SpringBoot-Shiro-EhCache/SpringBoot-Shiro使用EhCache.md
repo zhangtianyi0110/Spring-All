@@ -1,4 +1,4 @@
-# SpringBoot整合Shiro-Cache-使用缓存
+# SpringBoot整合Shiro-EhCache-使用缓存
 
 ## 问题
 
@@ -14,7 +14,7 @@
 
 ![2](./img/2.png)
 
-执行多次同样sql对数据库压力比较大，需要使用缓存来解决。这里使用两种方式实现缓存EhCache和Redis。
+执行多次同样sql对数据库压力比较大，需要使用缓存来解决，这里使用EhCache实现缓存。
 
 ## EhCache
 
@@ -148,85 +148,6 @@ java.io.tmpdir – 默认临时文件路径 -->
 ![4](./img/4.png)
 
 此时整合完成。
-
-## 基于Redis实现缓存管理
-
-此时可以使用redis来进行缓存管理
-
-### 添加依赖
-
-```xml
-<!--配置shiro-redis-->
-        <dependency>
-            <groupId>org.crazycake</groupId>
-            <artifactId>shiro-redis</artifactId>
-            <version>RELEASE</version>
-        </dependency>
-```
-
-### 配置redis基本信息
-
-```yml
-spring:
-  redis:
-    host: localhost
-    port: 6379
-    pool:
-      max-active: 8
-      max-wait: -1
-      max-idle: 8
-      min-idle: 0
-    timeout: 0
-```
-
-### 在ShiroConfig中配置Redis
-
-```java
-public RedisManager redisManager() {
-    RedisManager redisManager = new RedisManager();
-    return redisManager;
-}
-
-public RedisCacheManager reidsCacheManager() {
-    RedisCacheManager redisCacheManager = new RedisCacheManager();
-    redisCacheManager.setRedisManager(redisManager());
-    return redisCacheManager;
-}
-```
-
-先将RedisManager注入到reidsCacheManager，在将reidsCacheManager注入到SecurityManager中
-
-```java
-    /**
-     * 注入自定义realm、EhCacheManager/ReidsCacheManager对象
-     * @return SecurityManager
-     */
-    @Bean
-    public DefaultWebSecurityManager securityManager(){
-        DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
-        securityManager.setRealm(customRealm());//注入自定义Realm
-        securityManager.setRememberMeManager(cookieRememberMeManager());//注入RememberMeManager
-        //securityManager.setCacheManager(ehCacheManager());//注入EhCacheManager
-        securityManager.setCacheManager(reidsCacheManager());//注入RedisCacheManager
-        return securityManager;
-    }
-```
-
-此时将注入EhCacheManager注释掉，使用ReidsCacheManager对象。
-
-### 测试
-
-[下载redis-windows](https://github.com/microsoftarchive/redis/releases/download/win-3.2.100/Redis-x64-3.2.100.zip)，也可以在github选取你指定版本[redis-windos](https://github.com/microsoftarchive/redis/releases)
-
-需要先启动redis，将下载下来的zip解压，找到`redis-server.exe`双击启动
-
-启动成功
-
-![6](./img/6.png)
-
-启动springboot
-
-同样按照上述测试过程，测试成功。
 
 ## 注意缓存清空
 
