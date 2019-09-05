@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="http://ehcache.org/ehcache.xsd"
+         updateCheck="false">
+    <!--缓存位置-->
+    <diskStore path="D:/home"/>
+    <!--
+        maxElementsInMemory 最大缓存元素个数
+        eternal 缓存是否永久有效，一般都是false。
+        timeToIdleSeconds 最长空闲时间
+        timeToLiveSeconds 最长生命周期
+        overflowToDisk 是否持久化到磁盘
+        maxElementsOnDisk 磁盘上放的最大元素个数
+        diskPersistent 磁盘上是否永久有效
+        diskExpiryThreadIntervalSeconds 清理周期
+        memoryStoreEvictionPolicy 清理规则，LRU最近最少使用 FIFO先进先出
+        statistics 是否统计信息
+     -->
+    <defaultCache
+            maxElementsInMemory="10000"
+            eternal="false"
+            timeToIdleSeconds="1200"
+            timeToLiveSeconds="1200"
+            overflowToDisk="true"
+            maxElementsOnDisk="10000000"
+            diskPersistent="false"
+            diskExpiryThreadIntervalSeconds="120"
+            memoryStoreEvictionPolicy="LRU"/>
+    <!-- 缓存时间为1小时 -->
+    <cache
+            name="AuthorizationCache"
+            maxEntriesLocalHeap="10000"
+            eternal="false"
+            timeToIdleSeconds="3600"
+            timeToLiveSeconds="0"
+            overflowToDisk="false"
+            statistics="true" />
+</ehcache>
