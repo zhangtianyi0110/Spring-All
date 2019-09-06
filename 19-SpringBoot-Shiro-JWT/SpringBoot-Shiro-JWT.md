@@ -5,6 +5,10 @@
 JWT（JSON Web Tokens）是一种用于安全的传递信息而采用的一种标准。Web系统中，我们使用加密的Json来生成Token在服务端与客户端无状态传输，代替了之前常用的Session。
 系统采用Redis作为缓存，解决Token过期更新的问题，同时集成SSO登录，完整过程这里来总结一下。
 
+## 业务要求
+
+半个月内免登陆，这里就要使用到了refreshToken了，jwt设计思想很到位：设置发给前端的token一个有效期，比如2个小时，2个小时候前端发来的token就会失效，这个时候我们根据发来的token判断下，如果这个token在2个小时外，并在刷新token的有效期内（比如半个月内），那么我们在给前端返回数据的时候返回一个新token，前端接到这个token存储起来，当再次请求的时候，发送新的token，如此周而复始，只要你在半个月内没有间断去进入系统，那么完全不需要去进行登录的操作。
+
 ## JWT登录主要流程
 
 1. 登录时，密码验证通过，取当前时间戳生成签名Token，放在Response Header的Authorization属性中，同时在缓存中记录值为当前时间戳的RefreshToken，并设置有效期。
@@ -301,7 +305,7 @@ public class ShiroConfig {
         shiroFilterFactoryBean.setLoginUrl("/login");
         shiroFilterFactoryBean.setSuccessUrl("/index");
         shiroFilterFactoryBean.setUnauthorizedUrl("/unauthorized/**");//无权限跳转
-        // 在 Shiro过滤器链上加入 JWTFilter
+        JwtFilter
         LinkedHashMap<String, Filter> filters = new LinkedHashMap<>();
         filters.put("jwt", new JWTFilter());
         shiroFilterFactoryBean.setFilters(filters);

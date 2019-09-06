@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 public class LoginController {
-    private Logger logger = LoggerFactory.getLogger(LoginController.class);
+    private Logger log = LoggerFactory.getLogger(LoginController.class);
 
     @GetMapping("/login")
     public String login(){
@@ -31,12 +31,12 @@ public class LoginController {
     @PostMapping("/login")
     @ResponseBody
     public ResponseData login(User user) throws Exception{
-        logger.info("开始认证...");
+        log.info("开始认证...");
         Subject subject = SecurityUtils.getSubject();
         UsernamePasswordToken token = new UsernamePasswordToken(user.getUsername(), user.getPassword());
         token.setRememberMe(user.isRememberMe());
         subject.login(token);//登录认证
-        logger.info("结束认证...");
+        log.info("结束认证...");
         return ResponseUtil.success("登录成功");
     }
 

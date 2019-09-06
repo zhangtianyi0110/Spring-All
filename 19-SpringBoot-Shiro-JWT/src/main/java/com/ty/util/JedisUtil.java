@@ -14,6 +14,7 @@ import java.util.Set;
  */
 @Component
 public class JedisUtil {
+
     //通过jedis连接池获取redis连接
     @Resource
     private JedisPool jedisPool;

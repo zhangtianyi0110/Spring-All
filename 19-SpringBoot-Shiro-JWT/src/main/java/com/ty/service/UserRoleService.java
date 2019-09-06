@@ -10,7 +10,7 @@ import java.util.Set;
 
 @Service
 public class UserRoleService {
-    private Logger logger = LoggerFactory.getLogger(UserRoleService.class);
+    private Logger log = LoggerFactory.getLogger(UserRoleService.class);
     @Resource
     private UserRoleMapper userRoleMapper;
 

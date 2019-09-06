@@ -17,7 +17,7 @@ import java.io.IOException;
 
 @ControllerAdvice
 public class ShiroExceptionHandler {
-    private Logger logger = LoggerFactory.getLogger(ShiroExceptionHandler.class);
+    private Logger log = LoggerFactory.getLogger(ShiroExceptionHandler.class);
 
     /**
      * 对shiro认证抛出的异常统一处理
@@ -27,7 +27,7 @@ public class ShiroExceptionHandler {
              HttpServletResponse response, Exception e) throws IOException {
 
         //系统异常打印
-        logger.error(e.getMessage());
+        log.error(e.getMessage());
         if(e instanceof UnknownAccountException){
             return ResponseUtil.failure(401,"用户名不存在");
         }else if(e instanceof IncorrectCredentialsException){
@@ -42,7 +42,7 @@ public class ShiroExceptionHandler {
     public String handleAuthorizationException(HttpServletRequest request,
              HttpServletResponse response, Exception e) throws IOException {
         //系统异常打印
-        logger.error(e.getMessage());
+        log.error(e.getMessage());
         return "403";
     }
 

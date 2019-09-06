@@ -1,27 +1,29 @@
-package com.ty.shiro;
+package com.ty.config;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.stereotype.Component;
 
 @PropertySource("classpath:properties/jwt.properties")
-@Component
+@ConfigurationProperties(prefix = "token")
+@Configuration
 public class JwtProperties {
     //token过期时间，单位分钟
-    @Value("${token.tokenExpireTime}")
+//    @Value("${token.tokenExpireTime}")
     private Integer tokenExpireTime;
     
     //刷新Token过期时间，单位分钟
-    @Value("${token.refreshTokenExpireTime}")
+//    @Value("${token.refreshTokenExpireTime}")
     private Integer refreshTokenExpireTime;
     
     //Shiro缓存有效期，单位分钟
-    @Value("${token.shiroCacheExpireTime}")
+//    @Value("${token.shiroCacheExpireTime}")
     private Integer shiroCacheExpireTime;
     
     //token加密密钥
-    @Value("${token.secretKey}")
+//    @Value("${token.secretKey}")
     private String secretKey;
+
 
     public Integer getTokenExpireTime() {
         return tokenExpireTime;
@@ -54,4 +56,6 @@ public class JwtProperties {
     public void setSecretKey(String secretKey) {
         this.secretKey = secretKey;
     }
+
+
 }

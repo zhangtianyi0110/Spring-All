@@ -21,7 +21,7 @@ import java.util.LinkedHashMap;
 
 @Configuration
 public class ShiroConfig {
-    private Logger logger = LoggerFactory.getLogger(ShiroConfig.class);
+    private Logger log = LoggerFactory.getLogger(ShiroConfig.class);
 
     /**
      * 使用shiro-thymeleaf-tag配置
@@ -58,7 +58,7 @@ public class ShiroConfig {
          * 解决方法:主动设置一个密钥
          */
         cookieRememberMeManager.setCipherKey(Base64.decode("6ZmI6I2j5Y+R5aSn5ZOlAA=="));
-        logger.info("加载RememberMeManager完成...");
+        log.info("加载RememberMeManager完成...");
         return cookieRememberMeManager;
     }
     /**
@@ -72,7 +72,7 @@ public class ShiroConfig {
         HashedCredentialsMatcher matcher = new HashedCredentialsMatcher("md5");
         matcher.setHashIterations(1);
         customRealm.setCredentialsMatcher(matcher);
-        logger.info("加载CustomRealm完成...");
+        log.info("加载CustomRealm完成...");
         return customRealm;
     }
 

@@ -1,7 +1,11 @@
 package com.ty.shiro;
 
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.exceptions.SignatureVerificationException;
+import com.auth0.jwt.exceptions.TokenExpiredException;
+import com.ty.config.JwtProperties;
 import com.ty.constant.SecurityConsts;
-import com.ty.util.ResponseUtil;
+import com.ty.redis.JwtRedisCache;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.apache.shiro.web.filter.authc.BasicHttpAuthenticationFilter;
 import org.slf4j.Logger;
@@ -10,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import javax.annotation.Resource;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
@@ -18,18 +23,23 @@ import java.io.IOException;
 import java.net.URLEncoder;
 
 /**
- *  @ClassName: JWTFilter
+ *  @ClassName: JwtFilter
  *  @Description: JWT过滤器
  *  @author: zhangtianyi
  *  @Date: 2019-09-04 21:28
  *
  */
-public class JWTFilter extends BasicHttpAuthenticationFilter {
+public class JwtFilter extends BasicHttpAuthenticationFilter {
     private Logger log = LoggerFactory.getLogger(this.getClass());
 
     private static final String AUTHORIZATION = "Authorization";
 
     private AntPathMatcher pathMatcher = new AntPathMatcher();
+
+    @Resource
+    private JwtRedisCache jwtRedisCache;
+    @Resource
+    private JwtProperties jwtProperties;
 
     @Override
     protected boolean isAccessAllowed(ServletRequest request, ServletResponse response,
@@ -39,11 +49,27 @@ public class JWTFilter extends BasicHttpAuthenticationFilter {
         if (isLoginAttempt(request, response)) {
             //如果存在，则进入 executeLogin 方法执行登入，检查 token 是否正确
             try {
-                executeLogin(request, response);
-                return true;
+                this.executeLogin(request, response);
             } catch (Exception e) {
+                String msg = e.getMessage();
+                Throwable throwable = e.getCause();
+                if (throwable != null && throwable instanceof SignatureVerificationException) {
+                    msg = "Token或者密钥不正确(" + throwable.getMessage() + ")";
+                } else if (throwable != null && throwable instanceof TokenExpiredException) {
+                    // AccessToken已过期,但在刷新期内，刷新token
+                    if (this.refreshToken(request, response)) {
+                        return true;
+                    } else {
+                        msg = "Token已过期(" + throwable.getMessage() + ")";
+                    }
+                } else {
+                    if (throwable != null) {
+                        msg = throwable.getMessage();
+                    }
+                }
                 //token 错误
-                ResponseUtil.failure(401, "认证不通过，请重新登录！");
+                log.error("认证不通过，请重新登录！");
+                throw new JWTVerificationException(msg);
             }
         }
         //如果请求头不存在 Token，则可能是执行登陆操作或者是游客状态访问，无需检查 token，直接返回 true
@@ -68,7 +94,7 @@ public class JWTFilter extends BasicHttpAuthenticationFilter {
 
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
         String token = httpServletRequest.getHeader(AUTHORIZATION);
-        JWTToken jwtToken = new JWTToken(token);
+        JwtToken jwtToken = new JwtToken(token);
         try {
             // 提交给realm进行登入，如果错误他会抛出异常并被捕获
             getSubject(request, response).login(jwtToken);
@@ -76,7 +102,8 @@ public class JWTFilter extends BasicHttpAuthenticationFilter {
             return true;
         } catch (Exception e) {
             log.error(e.getMessage());
-            return false;
+            throw e;
+//            return false;
         }
     }
 
@@ -84,27 +111,27 @@ public class JWTFilter extends BasicHttpAuthenticationFilter {
      * 刷新AccessToken，进行判断RefreshToken是否过期，未过期就返回新的AccessToken且继续正常访问
      */
     private boolean refreshToken(ServletRequest request, ServletResponse response) {
-        // 获取AccessToken(Shiro中getAuthzHeader方法已经实现)
+        // 获取Token(Shiro中getAuthzHeader方法已经实现)
         String token = this.getAuthzHeader(request);
         // 获取当前Token的帐号信息
-        String account = JwtUtil.getClaim(token, SecurityConsts.ACCOUNT);
-        String refreshTokenCacheKey = SecurityConsts.PREFIX_SHIRO_REFRESH_TOKEN + account;
+        String username = JwtUtil.getClaim(token, SecurityConsts.USERNAME);
+        String refreshTokenCacheKey = SecurityConsts.REFRESH_TOKEN + username;
         // 判断Redis中RefreshToken是否存在
-        if (cacheClient.exists(refreshTokenCacheKey)) {
-            // 获取RefreshToken时间戳,及AccessToken中的时间戳
-            // 相比如果一致，进行AccessToken刷新
-            String currentTimeMillisRedis = cacheClient.get(refreshTokenCacheKey);
-            String tokenMillis=JwtUtil.getClaim(token, SecurityConsts.CURRENT_TIME_MILLIS);
+        if (jwtRedisCache.get(refreshTokenCacheKey) != null) {
+            // 获取RefreshToken时间戳,及Token中的时间戳
+            // 相比如果一致，进行Token刷新
+            String currentTimeMillisRedis = (String) jwtRedisCache.get(refreshTokenCacheKey);
+            String tokenMillis = JwtUtil.getClaim(token, SecurityConsts.CURRENT_TIME_MILLIS);
 
             if (tokenMillis.equals(currentTimeMillisRedis)) {
 
                 // 设置RefreshToken中的时间戳为当前最新时间戳
                 String currentTimeMillis = String.valueOf(System.currentTimeMillis());
-                Integer refreshTokenExpireTime = jwtProperties.refreshTokenExpireTime;
-                cacheClient.set(refreshTokenCacheKey, currentTimeMillis,refreshTokenExpireTime*60l);
+                Integer refreshTokenExpireTime = new JwtProperties().getRefreshTokenExpireTime();
+                jwtRedisCache.put(refreshTokenCacheKey, currentTimeMillis, jwtProperties.getRefreshTokenExpireTime());
 
                 // 刷新AccessToken，为当前最新时间戳
-                token = JwtUtil.sign(account, currentTimeMillis);
+                token = JwtUtil.sign(username, currentTimeMillis);
 
                 // 使用AccessToken 再次提交给ShiroRealm进行认证，如果没有抛出异常则登入成功，返回true
                 JwtToken jwtToken = new JwtToken(token);

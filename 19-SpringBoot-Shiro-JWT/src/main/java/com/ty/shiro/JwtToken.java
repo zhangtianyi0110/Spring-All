@@ -3,20 +3,20 @@ package com.ty.shiro;
 import org.apache.shiro.authc.AuthenticationToken;
 
 
-public class JWTToken implements AuthenticationToken {
+public class JwtToken implements AuthenticationToken {
 
     private String token;
 
     private String exipreAt;
 
-    public JWTToken() {
+    public JwtToken() {
     }
 
-    public JWTToken(String token) {
+    public JwtToken(String token) {
         this(token,null);
     }
 
-    public JWTToken(String token, String exipreAt) {
+    public JwtToken(String token, String exipreAt) {
         this.token = token;
         this.exipreAt = exipreAt;
     }

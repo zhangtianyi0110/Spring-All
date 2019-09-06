@@ -25,7 +25,7 @@ import java.util.Set;
  */
 public class CustomRealm extends AuthorizingRealm {
 
-    private Logger logger = LoggerFactory.getLogger(CustomRealm.class);
+    private Logger log = LoggerFactory.getLogger(CustomRealm.class);
     @Resource
     private UserService userService;
     @Resource
@@ -37,7 +37,7 @@ public class CustomRealm extends AuthorizingRealm {
     //登录认证
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
-        logger.info("-----doGetAuthenticationInfo 开始-----");
+        log.info("-----doGetAuthenticationInfo 开始-----");
         //1.从主体传过来的授权信息中，获取用户名
         String usernmae = (String) authenticationToken.getPrincipal();
         //2.通过用户名到数据库中获取角色权限数据
@@ -48,7 +48,7 @@ public class CustomRealm extends AuthorizingRealm {
         SimpleAuthenticationInfo authenticationInfo = new SimpleAuthenticationInfo(user, user.getPassword(), getName());
         //返回authenticationInfo对象前设置盐
         authenticationInfo.setCredentialsSalt(ByteSource.Util.bytes(user.getUsername()));
-        logger.info("-----doGetAuthenticationInfo 结束-----");
+        log.info("-----doGetAuthenticationInfo 结束-----");
         return authenticationInfo;
 
     }
@@ -64,7 +64,7 @@ public class CustomRealm extends AuthorizingRealm {
         SimpleAuthorizationInfo authorizationInfo = new SimpleAuthorizationInfo();
         authorizationInfo.setRoles(roles);//角色
         authorizationInfo.setStringPermissions(permissions);//权限
-        logger.info("用户" + user.getUsername() + "获取权限...doGetAuthorizationInfo被调用了...");
+        log.info("用户" + user.getUsername() + "获取权限...doGetAuthorizationInfo被调用了...");
         return authorizationInfo;
     }
 }

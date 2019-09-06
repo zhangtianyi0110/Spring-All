@@ -8,11 +8,11 @@ public class SecurityConsts {
     //JWT-username
     public static final String USERNAME = "username";
 
-    //Shiro redis 前缀
-    public static final String PREFIX_SHIRO_CACHE = "tyblog:cache:";
+    //shiro_redis 前缀
+    public static final String PREFIX_SHIRO_CACHE = "shiro:cache";
 
-    //redis-key-前缀-shiro:refresh_token
-    public final static String PREFIX_SHIRO_REFRESH_TOKEN = "tyblog:refresh_token:";
+    //refresh_token前缀
+    public final static String REFRESH_TOKEN = "refresh_token:";
 
     //JWT-currentTimeMillis
     public final static String CURRENT_TIME_MILLIS = "currentTimeMillis";
