@@ -1,4 +1,4 @@
-package com.ty.config;
+package com.ty.shiro.jwt;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -7,7 +7,7 @@ import org.springframework.context.annotation.PropertySource;
 @PropertySource("classpath:properties/jwt.properties")
 @ConfigurationProperties(prefix = "token")
 @Configuration
-public class JwtProperties {
+public class JwtConfig {
     //token过期时间，单位分钟
 //    @Value("${token.tokenExpireTime}")
     private Integer tokenExpireTime;

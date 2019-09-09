@@ -1,7 +1,8 @@
-package com.ty.config;
+package com.ty.shiro;
 
-import com.ty.shiro.CustomRealm;
-import com.ty.shiro.JwtFilter;
+import com.ty.shiro.jwt.JwtConfig;
+import com.ty.shiro.jwt.JwtFilter;
+import com.ty.shiro.jwt.JwtRedisCache;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
@@ -21,12 +22,14 @@ import java.util.LinkedHashMap;
 
 
 @Configuration
-@DependsOn("jwtProperties")//在JwtProperties后加载
+@DependsOn({"jwtConfig","jedisConfig"})//在JwtProperties后加载
 public class ShiroConfig {
     private Logger log = LoggerFactory.getLogger(ShiroConfig.class);
 
     @Autowired
-    private JwtProperties jwtProperties;
+    private JwtConfig jwtConfig;
+    @Autowired
+    private JwtRedisCache jwtRedisCache;
 
     //Shiro缓存有效期，单位分钟
     @Value("${token.shiroCacheExpireTime}")
@@ -58,7 +61,7 @@ public class ShiroConfig {
     public RedisCacheManager reidsCacheManager() {
         RedisCacheManager redisCacheManager = new RedisCacheManager();
         redisCacheManager.setRedisManager(redisManager());//注入redis管理器
-        redisCacheManager.setExpire(jwtProperties.getShiroCacheExpireTime()*60);//设置过期时间
+        redisCacheManager.setExpire(jwtConfig.getShiroCacheExpireTime()*60);//设置过期时间
         return redisCacheManager;
     }
 
@@ -99,7 +102,7 @@ public class ShiroConfig {
         shiroFilterFactoryBean.setUnauthorizedUrl("/unauthorized/**");//无权限跳转
         // 在 Shiro过滤器链上加入 JwtFilter
         LinkedHashMap<String, Filter> filters = new LinkedHashMap<>();
-        filters.put("jwt", new JwtFilter());
+        filters.put("jwt", new JwtFilter(jwtRedisCache, jwtConfig));
         shiroFilterFactoryBean.setFilters(filters);
 
         LinkedHashMap<String, String> filterChainDefinitionMap = new LinkedHashMap<>();

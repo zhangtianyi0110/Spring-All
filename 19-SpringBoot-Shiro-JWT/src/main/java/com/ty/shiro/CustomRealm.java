@@ -1,12 +1,18 @@
 package com.ty.shiro;
 
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.ty.constant.SecurityConsts;
 import com.ty.pojo.User;
-import com.ty.redis.JwtRedisCache;
 import com.ty.service.UserPermsService;
 import com.ty.service.UserRoleService;
 import com.ty.service.UserService;
-import org.apache.shiro.authc.*;
+import com.ty.shiro.jwt.JwtRedisCache;
+import com.ty.shiro.jwt.JwtToken;
+import com.ty.shiro.jwt.JwtUtil;
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authc.AuthenticationInfo;
+import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.authc.SimpleAuthenticationInfo;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
@@ -15,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.Set;
 
 /**
@@ -27,6 +34,8 @@ import java.util.Set;
 public class CustomRealm extends AuthorizingRealm {
 
     private Logger log = LoggerFactory.getLogger(this.getClass());
+    @Resource
+    private HttpServletRequest request;
     @Resource
     private JwtRedisCache jwtRedisCache;
     @Resource
@@ -49,20 +58,26 @@ public class CustomRealm extends AuthorizingRealm {
      * 登录认证
      */
     @Override
-    protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
+    protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException{
         log.info("-----doGetAuthenticationInfo 开始-----");
         // 这里的 token是从 JwtFilter 的 executeLogin 方法传递过来的
         String token = (String) authenticationToken.getCredentials();
         //1.从token中获取用户名，因为用户名不是私密直接获取
-        String usernmae = JwtUtil.getUsername(token);
+        String username = JwtUtil.getUsername(token);
         //2.通过用户名到数据库中获取角色权限数据
-        User user = userService.findByUsername(usernmae);
-        if(user == null || !JwtUtil.verify(token)){
-            throw new UnknownAccountException("用户名或密码错误");
+        User user = userService.findByUsername(username);
+        if(user == null ){
+            throw new AuthenticationException("用户名或密码错误");
         }
-        String refreshTokenCacheKey = SecurityConsts.REFRESH_TOKEN + usernmae;
 
-        if (jwtRedisCache.get(refreshTokenCacheKey)!=null) {
+        //获取ip与redis中ip对比
+        String ipRedis = (String) jwtRedisCache.get(SecurityConsts.IP_TOKEN + username);
+        if(!JwtUtil.getIpAddress(request).equals(ipRedis)){
+            throw new AuthenticationException("不是正常ip，token可能被盗用");
+        }
+
+        String refreshTokenCacheKey = SecurityConsts.REFRESH_TOKEN + username;
+        if (JwtUtil.verify(token) && jwtRedisCache.get(refreshTokenCacheKey)!=null) {
             String currentTimeMillisRedis = (String) jwtRedisCache.get(refreshTokenCacheKey);
             // 获取AccessToken时间戳，与RefreshToken的时间戳对比
             if (JwtUtil.getClaim(token, SecurityConsts.CURRENT_TIME_MILLIS).equals(currentTimeMillisRedis)) {
@@ -70,7 +85,8 @@ public class CustomRealm extends AuthorizingRealm {
                 return new SimpleAuthenticationInfo(token, token, getName());
             }
         }
-        throw new AuthenticationException("Token expired or incorrect.");
+
+        throw new TokenExpiredException("Token expired or incorrect.");
     }
     //获取权限
     @Override

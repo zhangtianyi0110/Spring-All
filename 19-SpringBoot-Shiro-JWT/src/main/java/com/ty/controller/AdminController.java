@@ -1,5 +1,6 @@
 package com.ty.controller;
 
+import com.ty.base.BaseController;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -7,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequestMapping("admin")
-public class AdminController {
+public class AdminController extends BaseController {
 
     @RequiresPermissions("admin:get")
     @RequestMapping("get")

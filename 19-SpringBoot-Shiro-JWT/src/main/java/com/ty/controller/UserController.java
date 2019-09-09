@@ -1,5 +1,6 @@
 package com.ty.controller;
 
+import com.ty.base.BaseController;
 import com.ty.dao.UserPermsMapper;
 import com.ty.dao.UserRoleMapper;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
@@ -11,7 +12,7 @@ import javax.annotation.Resource;
 
 @Controller
 @RequestMapping("/user")
-public class UserController {
+public class UserController extends BaseController {
     @Resource
     private UserRoleMapper userRoleMapper;
     @Resource

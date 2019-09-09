@@ -14,6 +14,9 @@ public class SecurityConsts {
     //refresh_token前缀
     public final static String REFRESH_TOKEN = "refresh_token:";
 
+    //ip_token 记录token的ip
+    public final static String IP_TOKEN = "ip_token";
+
     //JWT-currentTimeMillis
     public final static String CURRENT_TIME_MILLIS = "currentTimeMillis";
 }

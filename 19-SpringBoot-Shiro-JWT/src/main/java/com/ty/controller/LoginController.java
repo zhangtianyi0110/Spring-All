@@ -1,12 +1,13 @@
 package com.ty.controller;
 
-import com.ty.config.JwtProperties;
+import com.ty.base.BaseController;
 import com.ty.constant.SecurityConsts;
 import com.ty.pojo.ResponseData;
 import com.ty.pojo.User;
-import com.ty.redis.JwtRedisCache;
 import com.ty.service.UserService;
-import com.ty.shiro.JwtUtil;
+import com.ty.shiro.jwt.JwtConfig;
+import com.ty.shiro.jwt.JwtRedisCache;
+import com.ty.shiro.jwt.JwtUtil;
 import com.ty.util.MD5Utils;
 import com.ty.util.ResponseUtil;
 import org.apache.shiro.SecurityUtils;
@@ -24,15 +25,17 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.annotation.Resource;
 
 @Controller
-public class LoginController {
+public class LoginController extends BaseController {
     private Logger log = LoggerFactory.getLogger(LoginController.class);
 
     @Resource
     private JwtRedisCache jwtRedisCache;
     @Resource
-    private JwtProperties jwtProperties;
+    private JwtConfig jwtConfig;
     @Resource
     private UserService userService;
+
+
 
     @GetMapping("/login")
     public String login(){
@@ -57,7 +60,9 @@ public class LoginController {
         }
         String currentTimeMillis = String.valueOf(System.currentTimeMillis());
         String jwt = JwtUtil.sign(user.getUsername(), currentTimeMillis);//生成签名
-        jwtRedisCache.put(SecurityConsts.REFRESH_TOKEN + username, currentTimeMillis, jwtProperties.getRefreshTokenExpireTime());//将时间戳存入缓存
+        jwtRedisCache.put(SecurityConsts.REFRESH_TOKEN + username, currentTimeMillis, jwtConfig.getRefreshTokenExpireTime());//将时间戳存入缓存
+        jwtRedisCache.put(SecurityConsts.IP_TOKEN + username, JwtUtil.getIpAddress(request), jwtConfig.getRefreshTokenExpireTime());//将ip存入，防止其他用户使用token侵入
+        log.info("当前用户登录ip为:"+JwtUtil.getIpAddress(request));
         log.info("结束认证...");
         return ResponseUtil.success("登录成功", jwt);
     }

@@ -1,11 +1,10 @@
-package com.ty.shiro;
+package com.ty.shiro.jwt;
 
-import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.SignatureVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
-import com.ty.config.JwtProperties;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ty.constant.SecurityConsts;
-import com.ty.redis.JwtRedisCache;
+import com.ty.pojo.ResponseData;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.apache.shiro.web.filter.authc.BasicHttpAuthenticationFilter;
 import org.slf4j.Logger;
@@ -14,12 +13,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import javax.annotation.Resource;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.URLEncoder;
 
 /**
@@ -29,6 +28,7 @@ import java.net.URLEncoder;
  *  @Date: 2019-09-04 21:28
  *
  */
+
 public class JwtFilter extends BasicHttpAuthenticationFilter {
     private Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -36,10 +36,17 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
 
     private AntPathMatcher pathMatcher = new AntPathMatcher();
 
-    @Resource
     private JwtRedisCache jwtRedisCache;
-    @Resource
-    private JwtProperties jwtProperties;
+
+    private JwtConfig jwtConfig;
+
+    public JwtFilter() {
+    }
+
+    public JwtFilter(JwtRedisCache jwtRedisCache, JwtConfig jwtConfig) {
+        this.jwtRedisCache = jwtRedisCache;
+        this.jwtConfig = jwtConfig;
+    }
 
     @Override
     protected boolean isAccessAllowed(ServletRequest request, ServletResponse response,
@@ -69,7 +76,8 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
                 }
                 //token 错误
                 log.error("认证不通过，请重新登录！");
-                throw new JWTVerificationException(msg);
+                this.response401(request,response,msg);
+                return false;
             }
         }
         //如果请求头不存在 Token，则可能是执行登陆操作或者是游客状态访问，无需检查 token，直接返回 true
@@ -90,21 +98,17 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
      * 执行登录操作
      */
     @Override
-    protected boolean executeLogin(ServletRequest request, ServletResponse response) {
+    protected boolean executeLogin(ServletRequest request, ServletResponse response) throws Exception {
 
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
         String token = httpServletRequest.getHeader(AUTHORIZATION);
         JwtToken jwtToken = new JwtToken(token);
-        try {
-            // 提交给realm进行登入，如果错误他会抛出异常并被捕获
-            getSubject(request, response).login(jwtToken);
-            // 如果没有抛出异常则代表登入成功，返回true
-            return true;
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            throw e;
-//            return false;
-        }
+
+        // 提交给realm进行登入，如果错误他会抛出异常并被捕获
+        getSubject(request, response).login(jwtToken);
+        // 如果没有抛出异常则代表登入成功，返回true
+        return true;
+
     }
 
     /**
@@ -125,11 +129,10 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
 
             if (tokenMillis.equals(currentTimeMillisRedis)) {
 
-                // 设置RefreshToken中的时间戳为当前最新时间戳
+                // 设置RefreshToken中的时间戳为当前最新时间戳,并重制ip缓存时间
                 String currentTimeMillis = String.valueOf(System.currentTimeMillis());
-                Integer refreshTokenExpireTime = new JwtProperties().getRefreshTokenExpireTime();
-                jwtRedisCache.put(refreshTokenCacheKey, currentTimeMillis, jwtProperties.getRefreshTokenExpireTime());
-
+                jwtRedisCache.put(refreshTokenCacheKey, currentTimeMillis, jwtConfig.getRefreshTokenExpireTime());
+                jwtRedisCache.put(SecurityConsts.IP_TOKEN+username, JwtUtil.getIpAddress((HttpServletRequest) request), jwtConfig.getRefreshTokenExpireTime());
                 // 刷新AccessToken，为当前最新时间戳
                 token = JwtUtil.sign(username, currentTimeMillis);
 
@@ -163,6 +166,27 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
             return false;
         }
         return super.preHandle(request, response);
+    }
+
+    /**
+     * 401非法请求
+     * @param req
+     * @param resp
+     */
+    private void response401(ServletRequest req, ServletResponse resp,String msg) {
+        HttpServletResponse httpServletResponse = (HttpServletResponse) resp;
+        httpServletResponse.setStatus(HttpStatus.UNAUTHORIZED.value());
+        httpServletResponse.setCharacterEncoding("UTF-8");
+        httpServletResponse.setContentType("application/json; charset=utf-8");
+        try (PrintWriter out =httpServletResponse.getWriter()){
+
+            ResponseData result = new ResponseData();
+            result.setCode(401);
+            result.setMsg(msg);
+            out.append(new ObjectMapper().writeValueAsString(result));
+        } catch (IOException e) {
+            log.error("返回Response信息出现IOException异常:" + e.getMessage());
+        }
     }
 
     /**

@@ -18,6 +18,7 @@ public class JedisUtil {
     //通过jedis连接池获取redis连接
     @Resource
     private JedisPool jedisPool;
+
     //获取连接
     private Jedis getResource(){
         return jedisPool.getResource();

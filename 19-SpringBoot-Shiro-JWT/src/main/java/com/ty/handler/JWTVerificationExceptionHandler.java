@@ -21,13 +21,15 @@ import java.io.IOException;
  */
 @ControllerAdvice
 public class JWTVerificationExceptionHandler {
-    Logger log = LoggerFactory.getLogger(this.getClass());
+
+    private Logger log = LoggerFactory.getLogger(this.getClass());
 
     @ExceptionHandler(JWTVerificationException.class)
-    public ResponseData handleJWTVerificationException(HttpServletRequest request,
-                HttpServletResponse response, Exception e) throws IOException {
-        log.error(e.getMessage());
+    public ResponseData handleAuthenticationException(HttpServletRequest request,
+            HttpServletResponse response, Exception e) throws IOException {
+
         //系统异常打印
-        return ResponseUtil.failure(401,e.getMessage());//异常回传信息
+        log.error(e.getMessage());
+        return ResponseUtil.failure(401,e.getMessage());
     }
 }

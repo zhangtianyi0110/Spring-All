@@ -1,4 +1,4 @@
-package com.ty.redis;
+package com.ty.shiro.jwt;
 
 import com.ty.util.JedisUtil;
 import org.apache.shiro.cache.Cache;
@@ -52,7 +52,7 @@ public class JwtRedisCache<K,V> implements Cache<K,V> {
      *
      * @param k
      * @param v
-     * @param expire 秒 int 失效时间
+     * @param expire 分钟 int 失效时间
      * @return
      * @throws CacheException
      */
@@ -60,7 +60,7 @@ public class JwtRedisCache<K,V> implements Cache<K,V> {
         byte[]key = getKey(k);
         byte[]value = SerializationUtils.serialize(v);
         jedisUtil.set(key,value);
-        jedisUtil.expire(key,expire);
+        jedisUtil.expire(key,expire * 60);
         return v;
     }
 

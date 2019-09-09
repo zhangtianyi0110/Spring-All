@@ -1,4 +1,4 @@
-package com.ty.shiro;
+package com.ty.shiro.jwt;
 
 import org.apache.shiro.authc.AuthenticationToken;
 
