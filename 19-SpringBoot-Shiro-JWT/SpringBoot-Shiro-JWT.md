@@ -522,10 +522,10 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
 
             if (tokenMillis.equals(currentTimeMillisRedis)) {
 
-                // 设置RefreshToken中的时间戳为当前最新时间戳
+                // 设置RefreshToken中的时间戳为当前最新时间戳,并重制ip缓存时间
                 String currentTimeMillis = String.valueOf(System.currentTimeMillis());
                 jwtRedisCache.put(refreshTokenCacheKey, currentTimeMillis, jwtConfig.getRefreshTokenExpireTime());
-
+                jwtRedisCache.put(SecurityConsts.IP_TOKEN+username, JwtUtil.getIpAddress((HttpServletRequest) request), jwtConfig.getRefreshTokenExpireTime());
                 // 刷新AccessToken，为当前最新时间戳
                 token = JwtUtil.sign(username, currentTimeMillis);
 
@@ -615,6 +615,8 @@ public class JwtUtil {
     @Autowired
     private static JwtUtil jwtUtil;
 
+    private static final String UNKNOWN = "unknow";
+
     @PostConstruct
     public void init() {
         jwtUtil = this;
@@ -678,6 +680,30 @@ public class JwtUtil {
                 .withExpiresAt(date)//过期时间
                 .sign(algorithm);
     }
+
+    /**
+     * 获取请求主机IP地址,如果通过代理进来，则透过防火墙获取真实IP地址;
+     */
+    public static String getIpAddress(HttpServletRequest request) {
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.length() == 0 || UNKNOWN.equalsIgnoreCase(ip)) {
+            ip = request.getHeader("Proxy-Client-IP");
+        }
+        if (ip == null || ip.length() == 0 || UNKNOWN.equalsIgnoreCase(ip)) {
+            ip = request.getHeader("WL-Proxy-Client-IP");
+        }
+        if (ip == null || ip.length() == 0 || UNKNOWN.equalsIgnoreCase(ip)) {
+            ip = request.getHeader("HTTP_CLIENT_IP");
+        }
+        if (ip == null || ip.length() == 0 || UNKNOWN.equalsIgnoreCase(ip)) {
+            ip = request.getHeader("HTTP_X_FORWARDED_FOR");
+        }
+        if (ip == null || ip.length() == 0 || UNKNOWN.equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddr();
+        }
+        ip = "0:0:0:0:0:0:0:1".equals(ip) ? "127.0.0.1" : ip;
+        return ip;
+    }
 }
 ```
 
@@ -696,9 +722,18 @@ public class JwtUtil {
 此处对token进行验证，token验证不通过可能是token已经超时了，此时需要在JwtFilter中进行是否需要刷新的判断，缓存中还有token，就需要刷新token，回传新token进行校验，缓存没有，说明已经过token期限了。
 
 ```java
+/**
+ * @ClassName: CustomRealm
+ * @Description: 自定义Realm
+ * @author zhangtainyi
+ * @date 2019/8/27 15:29
+ *
+ */
 public class CustomRealm extends AuthorizingRealm {
 
     private Logger log = LoggerFactory.getLogger(this.getClass());
+    @Resource
+    private HttpServletRequest request;
     @Resource
     private JwtRedisCache jwtRedisCache;
     @Resource
@@ -726,15 +761,21 @@ public class CustomRealm extends AuthorizingRealm {
         // 这里的 token是从 JwtFilter 的 executeLogin 方法传递过来的
         String token = (String) authenticationToken.getCredentials();
         //1.从token中获取用户名，因为用户名不是私密直接获取
-        String usernmae = JwtUtil.getUsername(token);
+        String username = JwtUtil.getUsername(token);
         //2.通过用户名到数据库中获取角色权限数据
-        User user = userService.findByUsername(usernmae);
+        User user = userService.findByUsername(username);
         if(user == null ){
             throw new AuthenticationException("用户名或密码错误");
         }
-        String refreshTokenCacheKey = SecurityConsts.REFRESH_TOKEN + usernmae;
 
-        if (JwtUtil.verify(token)&&jwtRedisCache.get(refreshTokenCacheKey)!=null) {
+        //获取ip与redis中ip对比
+        String ipRedis = (String) jwtRedisCache.get(SecurityConsts.IP_TOKEN + username);
+        if(!JwtUtil.getIpAddress(request).equals(ipRedis)){
+            throw new AuthenticationException("不是正常ip，token可能被盗用");
+        }
+
+        String refreshTokenCacheKey = SecurityConsts.REFRESH_TOKEN + username;
+        if (JwtUtil.verify(token) && jwtRedisCache.get(refreshTokenCacheKey)!=null) {
             String currentTimeMillisRedis = (String) jwtRedisCache.get(refreshTokenCacheKey);
             // 获取AccessToken时间戳，与RefreshToken的时间戳对比
             if (JwtUtil.getClaim(token, SecurityConsts.CURRENT_TIME_MILLIS).equals(currentTimeMillisRedis)) {
@@ -742,6 +783,7 @@ public class CustomRealm extends AuthorizingRealm {
                 return new SimpleAuthenticationInfo(token, token, getName());
             }
         }
+
         throw new TokenExpiredException("Token expired or incorrect.");
     }
     //获取权限
@@ -761,7 +803,6 @@ public class CustomRealm extends AuthorizingRealm {
 
     }
 }
-
 ```
 
 
@@ -770,7 +811,7 @@ public class CustomRealm extends AuthorizingRealm {
 
 ```java
 @Configuration
-@DependsOn({"jwtProperties","jedisConfig"})//在JwtProperties后加载
+@DependsOn({"jwtConfig","jedisConfig"})//在JwtProperties后加载
 public class ShiroConfig {
     private Logger log = LoggerFactory.getLogger(ShiroConfig.class);
 
@@ -875,3 +916,30 @@ public class ShiroConfig {
 ## 测试
 
 使用postman进行测试
+
+访问login登录
+
+![1](./img/1.png)
+
+登录成功返回token
+
+此时等token过期，这里我设置token过期时间是1分钟，redis刷新时间是5分钟。
+
+等1分钟后访问http://localhost:8080/user/get
+
+此时返回信息中携带新的token，此时抛出token过期的异常。
+
+![2](./img/2.png)
+
+此时token已经刷新，重新存取redis。
+
+![3](./img/3.png)
+
+此时刷新token，返回新的token在响应信息中。
+
+![5](./img/5.png)
+
+响应成功页面
+
+![4](./img/4.png)
+
