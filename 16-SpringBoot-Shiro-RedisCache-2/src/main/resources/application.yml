@@ -30,7 +30,7 @@ spring:
       # 配置监控统计拦截的filters, 去掉后监控界面sql无法统计, 'wall'用于防火墙
       filters: stat
       # Spring监控AOP切入点，如x.y.z.service.*,配置多个英文逗号分隔
-      aop-patterns: com.ty.servie.*
+      aop-patterns: com.zty.servie.*
 
       # WebStatFilter配置
       web-stat-filter:
@@ -66,7 +66,7 @@ spring:
 
 mybatis:
   # type-aliases扫描路径
-  type-aliases-package: com.ty.pojo
+  type-aliases-package: com.zty.pojo
   # mapper xml扫描路径
   mapper-locations: classpath:mapper/*.xml
   # mybatis config文件

@@ -87,47 +87,18 @@ spring:
       # 配置监控统计拦截的filters, 去掉后监控界面sql无法统计, 'wall'用于防火墙
       filters: stat
       # Spring监控AOP切入点，如x.y.z.service.*,配置多个英文逗号分隔
-      aop-patterns: com.ty.service.*
+      aop-patterns: com.zty.service.*
 
       # WebStatFilter配置
       web-stat-filter:
         enabled: true
         # 添加过滤规则
-        url-pattern: /*
-        # 忽略过滤的格式
-        exclusions: '*.js,*.gif,*.jpg,*.png,*.css,*.ico,/druid/*'
-
-      # StatViewServlet配置
-      stat-view-servlet:
-        enabled: true
-        # 访问路径为/druid时，跳转到StatViewServlet
-        url-pattern: /druid/*
-        # 是否能够重置数据
-        reset-enable: false
-        # 需要账号密码才能访问控制台
-        login-username: druid
-        login-password: druid123
-        # IP白名单
-        # allow: 127.0.0.1
-        # IP黑名单（共同存在时，deny优先于allow）
-        # deny: 192.168.1.218
-
-      # 配置StatFilter
-      filter:
-        stat:
-          log-slow-sql: true
-
-  thymeleaf:
-    cache: false
+        url-pattern:zty
 
 
-mybatis:
-  # type-aliases扫描路径
-  type-aliases-package: com.ty.pojo
-  # mapper xml扫描路径
-  mapper-locations: classpath:mapper/*.xml
-  # mybatis config文件
-  # config-location: classpath:mybatis.xml
+
+
+ml
 ```
 
 ## 构造基本的web分层

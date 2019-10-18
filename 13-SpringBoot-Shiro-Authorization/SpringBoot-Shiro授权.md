@@ -225,7 +225,7 @@ public interface UserRoleMapper {
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.ty.dao.UserRoleMapper">
+<mapper namespace="com.zty.dao.UserRoleMapper">
 
 <resultMap type="Role" id="Role">
    <id column="id" property="id" javaType="java.lang.Integer" jdbcType="NUMERIC"/>
@@ -253,7 +253,7 @@ public interface UserPermsMapper {
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.ty.dao.UserPermsMapper">
+<mapper namespace="com.zty.dao.UserPermsMapper">
 
 <resultMap type="Permission" id="Permission">
    <id column="id" property="id" javaType="java.lang.Integer" jdbcType="NUMERIC"/>

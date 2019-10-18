@@ -128,9 +128,9 @@ alter table user_role_relation add constraint FK_USER_ROLE_1 foreign key (userna
 alter table user_role_relation add constraint FK_USER_ROLE_2 foreign key (role_name)
       references role (role_name) on delete cascade on update cascade;
 
-DELETE FROM `user` WHERE `username` = 'ty' AND `password` = '72da43b6f18c8c03b59f387e6bece8b3';
+DELETE FROM `user` WHERE `username` = 'zty' AND `password` = '72da43b6f18c8c03b59f387e6bece8b3';
 DELETE FROM `user` WHERE `username` = 'admin' AND `password` = 'a66abb5684c45962d887564f08346e8d';
-INSERT INTO `user`(`username`, `password`) VALUES ('ty', '72da43b6f18c8c03b59f387e6bece8b3');
+INSERT INTO `user`(`username`, `password`) VALUES ('zty', '72da43b6f18c8c03b59f387e6bece8b3');
 INSERT INTO `user`(`username`, `password`) VALUES ('admin', 'a66abb5684c45962d887564f08346e8d');
 
 DELETE FROM `role` WHERE `role_name` = 'admin';
@@ -152,9 +152,9 @@ INSERT INTO `permission`(`permission`) VALUES ('user:*');
 INSERT INTO `permission`(`permission`) VALUES ('admin:get');
 
 DELETE FROM `user_role_relation` WHERE `role_name` = 'admin' AND `username` = 'admin';
-DELETE FROM `user_role_relation` WHERE `role_name` = 'user' AND `username` = 'ty';
+DELETE FROM `user_role_relation` WHERE `role_name` = 'user' AND `username` = 'zty';
 INSERT INTO `user_role_relation`(`username`, `role_name`) VALUES ('admin', 'admin');
-INSERT INTO `user_role_relation`(`username`, `role_name`) VALUES ('ty', 'user');
+INSERT INTO `user_role_relation`(`username`, `role_name`) VALUES ('zty', 'user');
 
 DELETE FROM `role_permission_relation` WHERE `role_name` = 'admin' AND `permission` = 'user:*';
 DELETE FROM `role_permission_relation` WHERE `role_name` = 'user' AND `permission` = 'user:get';
@@ -164,5 +164,5 @@ INSERT INTO `role_permission_relation`(`role_name`, `permission`) VALUES ('user'
 DELETE FROM `user_permission_relation` WHERE `username` = 'admin' AND `permission` = 'admin:get';
 DELETE FROM `user_permission_relation` WHERE `username` = 'user' AND `permission` = 'user:put';
 INSERT INTO `user_permission_relation`(`username`, `permission`) VALUES ('admin', 'admin:get');
-INSERT INTO `user_permission_relation`(`username`, `permission`) VALUES ('ty', 'user:put');
+INSERT INTO `user_permission_relation`(`username`, `permission`) VALUES ('zty', 'user:put');
 

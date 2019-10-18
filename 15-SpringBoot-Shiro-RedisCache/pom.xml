@@ -8,7 +8,7 @@
         <version>2.1.7.RELEASE</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>com.ty</groupId>
+    <groupId>com.zty</groupId>
     <artifactId>springboot-shiro-rediscache</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>SpringBoot-Shiro-RedisCache</name>
